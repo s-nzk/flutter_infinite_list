@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
-import 'package:flutter_infinite_list/bloc/bloc.dart';
-import 'package:flutter_infinite_list/post.dart';
+import 'package:flutter_infinite_list/bloc/infinit_list/bloc.dart';
+import 'package:flutter_infinite_list/models/post.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
@@ -28,17 +28,17 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   @override
   Stream<PostState> mapEventToState(PostEvent event) async* {
     if (event is Fetch && !_hasReachedMax(currentState)) {
+      print("mapEventToState=$currentState");
       try {
         if (currentState is PostUninitialized) {
           final posts = await _fetchPosts(0, 20);
           yield PostLoaded(posts: posts, hasReachedMax: false);
-          return;
         }
         if (currentState is PostLoaded) {
           PostLoaded state = currentState as PostLoaded;
           final posts = await _fetchPosts(state.posts.length, 20);
           yield posts.isEmpty
-              ? state.copyWith(hasReachedMax: false)
+              ? state.copyWith(hasReachedMax: true)
               : PostLoaded(
                   posts: state.posts + posts,
                   hasReachedMax: false,
